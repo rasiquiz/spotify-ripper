@@ -507,5 +507,5 @@ License
 
 `MIT License <http://en.wikipedia.org/wiki/MIT_License>`__
 
-.. |Version| image:: http://img.shields.io/pypi/v/spotify-ripper.svg?style=flat-square
-  :target: https://pypi.python.org/pypi/spotify-ripper
+.. |Version| image:: http://img.shields.io/pypi/v/spotify-ripper-morgaroth.svg?style=flat-square
+  :target: https://pypi.python.org/pypi/spotify-ripper-morgaroth

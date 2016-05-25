@@ -12,7 +12,6 @@ import re
 import math
 import unicodedata
 
-
 #  since there is no class, use global var
 util_globals = {'args': None}
 
@@ -38,7 +37,7 @@ def print_str(_str):
     """print without newline"""
     if not get_args().has_log:
         if sys.version_info >= (3, 0):
-            print(_str, end = '', flush = True)
+            print(_str, end='', flush=True)
         else:
             sys.stdout.write(_str)
             sys.stdout.flush()
@@ -191,7 +190,7 @@ def format_track_string(ripper, format_string, idx, track):
 
     # only retrieve album_artist_web if it exists in the format string
     if (current_album is not None and
-            format_string.find("{album_artists_web}") >= 0):
+                format_string.find("{album_artists_web}") >= 0):
         artist_array = \
             ripper.web.get_artists_on_album(current_album.link.uri)
         if artist_array is not None:
@@ -229,7 +228,7 @@ def format_track_string(ripper, format_string, idx, track):
     # load copyright only if needed
     copyright = label = ""
     if (format_string.find("{copyright}") >= 0 or
-            format_string.find("{label}") >= 0):
+                format_string.find("{label}") >= 0):
         album_browser = track.album.browse()
         album_browser.load()
         if len(album_browser.copyrights) > 0:
@@ -239,11 +238,11 @@ def format_track_string(ripper, format_string, idx, track):
     # load playlist create time or creator only if needed
     create_time = creator = ""
     if format_string.find("{create_time}") >= 0 or \
-            format_string.find("{creator}") >= 0:
+                    format_string.find("{creator}") >= 0:
         pl_track = get_playlist_track(track, current_playlist)
         if pl_track is not None:
             create_time = datetime.fromtimestamp(
-                    pl_track.create_time).strftime('%Y-%m-%d %H:%M:%S')
+                pl_track.create_time).strftime('%Y-%m-%d %H:%M:%S')
             creator = pl_track.creator.display_name
 
     tags = {
@@ -289,7 +288,7 @@ def format_track_string(ripper, format_string, idx, track):
     }
     fill_tags = {"idx", "index", "track_num", "track_idx",
                  "track_index", "disc_num", "disc_idx", "disc_index",
-                 "smart_num"}
+                 "smart_track_num", "smart_track_idx", "smart_track_index"}
     prefix_tags = {"feat_artists", "featuring_artists"}
     paren_tags = {"track_name", "track"}
     for tag in tags.keys():
@@ -297,38 +296,38 @@ def format_track_string(ripper, format_string, idx, track):
         if tag in fill_tags:
             match = re.search(r"\{" + tag + r":\d+\}", format_string)
             if match:
-                tokens = format_string[match.start():match.end()]\
+                tokens = format_string[match.start():match.end()] \
                     .strip("{}").split(":")
                 tag_filled = tags[tag].zfill(int(tokens[1]))
                 format_string = format_string[:match.start()] + tag_filled + \
-                    format_string[match.end():]
+                                format_string[match.end():]
         if tag in prefix_tags:
             # don't print prefix if there are no values
             if len(tags[tag]) > 0:
                 match = re.search(r"\{" + tag + r":[^\}]+\}", format_string)
                 if match:
-                    tokens = format_string[match.start():match.end()]\
+                    tokens = format_string[match.start():match.end()] \
                         .strip("{}").split(":")
                     format_string = format_string[:match.start()] + tokens[1] + \
-                        " " + tags[tag] + format_string[match.end():]
+                                    " " + tags[tag] + format_string[match.end():]
             else:
                 match = re.search(r"\s*\{" + tag +
                                   r":[^\}]+\}", format_string)
                 if match:
                     format_string = format_string[:match.start()] + \
-                                 format_string[match.end():]
+                                    format_string[match.end():]
         if tag in paren_tags:
             match = re.search(r"\{" + tag + r":paren\}", format_string)
             if match:
                 match_tag = re.search(r"(.*)\s+-\s+([^-]+)", tags[tag])
                 if match_tag:
                     format_string = format_string[:match.start()] + \
-                                 match_tag.group(1) + " (" + \
-                                 match_tag.group(2) + ")" + \
-                                 format_string[match.end():]
+                                    match_tag.group(1) + " (" + \
+                                    match_tag.group(2) + ")" + \
+                                    format_string[match.end():]
                 else:
                     format_string = format_string[:match.start()] + tags[tag] + \
-                                 format_string[match.end():]
+                                    format_string[match.end():]
 
     if args.format_case is not None:
         if args.format_case == "upper":
@@ -337,7 +336,7 @@ def format_track_string(ripper, format_string, idx, track):
             format_string = format_string.lower()
         elif args.format_case == "capitalize":
             format_string = ' '.join(word[0].upper() + word[1:] for \
-                word in format_string.split())
+                                     word in format_string.split())
 
     return format_string
 
@@ -373,6 +372,7 @@ MB_UNIT = "MB"
 '''Megabytes abbreviation'''
 GB_UNIT = "GB"
 '''Gigabytes abbreviation'''
+
 
 # borrowed from eyeD3
 
@@ -420,6 +420,7 @@ def format_size(size, short=False):
             str_value = str_value[:3]
         return "{0:>3s}{1}".format(str_value, suffix)
 
+
 # returns true if audio_file is a partial of track
 def is_partial(audio_file, track):
     args = get_args()
@@ -438,10 +439,10 @@ def is_partial(audio_file, track):
     # for 'weak', give a ~1.5 second wiggle-room
     if (args.partial_check == "strict"):
         return (audio_file_dur is None or
-            track.duration > (audio_file_dur * 1000))
+                track.duration > (audio_file_dur * 1000))
     else:
         return (audio_file_dur is not None and
-            (track.duration - 1500) > (audio_file_dur * 1000))
+                (track.duration - 1500) > (audio_file_dur * 1000))
 
 
 # borrowed from eyeD3
@@ -504,3 +505,18 @@ def format_time(seconds, total=None, short=False):
                     seconds // limit1, unit1,
                     (seconds % limit1) // limit2, unit2)
         return u'  ~inf'
+
+
+def format_timedelta(delta):
+    a = str(delta).split(':')
+    h = a[0]
+    m = a[1]
+    s = a[2].split('.')[0]
+    elements = []
+    if int(h) != 0:
+        elements.append('%sh' % h)
+    if int(m) != 0:
+        elements.append('%sm' % m)
+    if int(s) != 0:
+        elements.append('%ss' % s)
+    return ', '.join(elements)

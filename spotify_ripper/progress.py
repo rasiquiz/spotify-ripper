@@ -140,6 +140,7 @@ class Progress(object):
 
     def prepare_track(self, track):
         self.song_position = 0
+        self.last_track_start = datetime.now()
         self.song_duration = track.duration
         self.move_cursor = False
         self.current_track = track
@@ -148,6 +149,8 @@ class Progress(object):
     def end_track(self, show_end=True):
         if show_end:
             self.end_progress()
+        self.last_track_time = datetime.now() - self.last_track_start
+        self.last_track_start = None
         self.stat_prev = None
         self.song_eta = None
         self.total_eta = None

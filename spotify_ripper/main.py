@@ -38,8 +38,7 @@ def load_config(defaults):
                 "comment", "cover_file", "cover_file_and_embed", "directory",
                 "fail_log", "format", "genres", "grouping", "key", "user",
                 "password", "log", "artist_album_type", "replace", "partial_check",
-                "artist_album_market", "play_token_resume", "stop_after",
-                "resume_after"]
+                "artist_album_market"]
 
             # coerce boolean and none types
             config_items_new = {}
@@ -155,7 +154,10 @@ def main(prog_args=sys.argv[1:]):
     # set defaults
     parser.set_defaults(**defaults)
 
-    prog_version = pkg_resources.require("spotify-ripper")[0].version
+    try:
+        prog_version = pkg_resources.require("spotify-ripper-morgaroth")[0].version
+    except Exception:
+        prog_version = 'DEV'
     parser.add_argument(
         '-a', '--ascii', action='store_true',
         help='Convert the file name and the metadata tags to ASCII '
@@ -275,7 +277,7 @@ def main(prog_args=sys.argv[1:]):
              'err on the side of not re-ripping the file if it is unsure, '
              'whereas "strict" will re-rip the file [Default=weak]')
     parser.add_argument(
-        '--play-token-resume', nargs=1, metavar="RESUME_AFTER",
+        '--play-token-resume', metavar="RESUME_AFTER",
         help='If the \'play token\' is lost to a different device using '
              'the same Spotify account, the script will wait a speficied '
              'amount of time before restarting. This argument takes the same '
@@ -300,7 +302,7 @@ def main(prog_args=sys.argv[1:]):
         help='Remove libspotify\'s offline cache directory after the rip'
              'is complete to save disk space')
     parser.add_argument(
-        '--resume-after', nargs=1,
+        '--resume-after',
         help='Resumes script after a certain amount of time has passed '
              'after stopping (e.g. 1h30m). Alternatively, accepts a specific '
              'time in 24hr format to start after (e.g 03:30, 16:15). '
@@ -318,7 +320,7 @@ def main(prog_args=sys.argv[1:]):
         '--stereo-mode', choices=['j', 's', 'f', 'd', 'm', 'l', 'r'],
         help='Advanced stereo settings for Lame MP3 encoder only')
     parser.add_argument(
-        '--stop-after', nargs=1,
+        '--stop-after',
         help='Stops script after a certain amount of time has passed '
              '(e.g. 1h30m). Alternatively, accepts a specific time in 24hr '
              'format to stop after (e.g 03:30, 16:15)')
@@ -338,7 +340,7 @@ def main(prog_args=sys.argv[1:]):
         'uri', nargs="+",
         help='One or more Spotify URI(s) (either URI, a file of URIs or a '
              'search query)')
-    args = parser.parse_args(remaining_argv)
+    args = parser.parse_args(remaining_argv, args)
     init_util_globals(args)
 
     # kind of a hack to get colorama stripping to work when outputting
@@ -481,20 +483,22 @@ def main(prog_args=sys.argv[1:]):
 
     # check that --stop-after and --resume-after options are valid
     if args.stop_after is not None and \
-            parse_time_str(args.stop_after) is None:
+                    parse_time_str(args.stop_after) is None:
         print(Fore.RED + "--stop-after option is not valid" + Fore.RESET)
         sys.exit(1)
     if args.resume_after is not None and \
-            parse_time_str(args.resume_after) is None:
+                    parse_time_str(args.resume_after) is None:
         print(Fore.RED + "--resume-after option is not valid" + Fore.RESET)
         sys.exit(1)
     if args.play_token_resume is not None and \
-            parse_time_str(args.play_token_resume) is None:
+                    parse_time_str(args.play_token_resume) is None:
         print(Fore.RED + "--play_token_resume option is not valid" + Fore.RESET)
         sys.exit(1)
 
     print(Fore.YELLOW + "  Unicode support:\t" +
           Fore.RESET + unicode_support_str())
+    print(Fore.YELLOW + "  Local encoding:\t" +
+          Fore.RESET + sys.getdefaultencoding())
     print(Fore.YELLOW + "  Output directory:\t" + Fore.RESET +
           base_dir())
     print(Fore.YELLOW + "  Settings directory:\t" + Fore.RESET +
@@ -535,7 +539,7 @@ def main(prog_args=sys.argv[1:]):
     def check_uri_args():
         if len(args.uri) == 1 and path_exists(args.uri[0]):
             args.uri = [line.strip() for line in open(args.uri[0])
-                if not line.strip().startswith("#") and len(line.strip()) > 0]
+                        if not line.strip().startswith("#") and len(line.strip()) > 0]
         elif len(args.uri) == 1 and not args.uri[0].startswith("spotify:"):
             args.uri = [list(ripper.search_query(args.uri[0]))]
 
