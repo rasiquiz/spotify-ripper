@@ -2,26 +2,22 @@
 
 from __future__ import unicode_literals
 
-from subprocess import Popen, PIPE
-from colorama import Fore, Style
-from spotify_ripper.utils import *
-from spotify_ripper.tags import set_metadata_tags
-from spotify_ripper.progress import Progress
-from spotify_ripper.post_actions import PostActions
-from spotify_ripper.web import WebAPI
-from spotify_ripper.sync import Sync
-from spotify_ripper.eventloop import EventLoop
-from datetime import datetime
-import os
-import sys
-import time
-import threading
-import spotify
 import getpass
 import itertools
+import threading
+import time
 import wave
-import re
-import select
+from subprocess import Popen, PIPE
+
+import spotify
+
+from spotify_ripper.eventloop import EventLoop
+from spotify_ripper.post_actions import PostActions
+from spotify_ripper.progress import Progress
+from spotify_ripper.sync import Sync
+from spotify_ripper.tags import set_metadata_tags
+from spotify_ripper.utils import *
+from spotify_ripper.web import WebAPI
 
 try:
     # Python 3
@@ -101,10 +97,8 @@ class Ripper(threading.Thread):
 
             app_key_path = os.path.join(default_dir, "spotify_appkey.key")
             if not path_exists(app_key_path):
-                print("\n" + Fore.YELLOW +
-                      "Please copy your spotify_appkey.key to " +
-                      default_dir + ", or use the --key|-k option" +
-                      Fore.RESET)
+                print("\n" + Fore.YELLOW + "Please copy your spotify_appkey.key to " + default_dir +
+                      ", or use the --key|-k option" + Fore.RESET)
                 sys.exit(1)
 
             config.load_application_key_file(app_key_path)
@@ -197,22 +191,16 @@ class Ripper(threading.Thread):
             if isinstance(uri, list):
                 return uri
             else:
-                if (uri.startswith("spotify:artist:") and
-                        (args.artist_album_type is not None or
-                         args.artist_album_market is not None)):
+                if (uri.startswith("spotify:artist:") and (
+                                args.artist_album_type is not None or args.artist_album_market is not None)):
                     album_uris = self.web.get_albums_with_filter(uri)
-                    return itertools.chain(
-                        *[self.load_link(album_uri) for
-                          album_uri in album_uris])
+                    return itertools.chain(*[self.load_link(album_uri) for album_uri in album_uris])
                 elif uri.startswith("spotify:charts:"):
                     charts = self.web.get_charts(uri)
                     if charts is not None:
                         self.current_chart = charts
-                        chart_uris = ["spotify:track:" + t["track"]["id"]
-                            for t in charts["entries"]["items"]]
-                        return itertools.chain(
-                            *[self.load_link(chart_uri) for
-                              chart_uri in chart_uris])
+                        chart_uris = ["spotify:track:" + t["track"]["id"] for t in charts["entries"]["items"]]
+                        return itertools.chain(*[self.load_link(chart_uri) for chart_uri in chart_uris])
                     else:
                         return iter([])
                 else:
@@ -236,9 +224,7 @@ class Ripper(threading.Thread):
         self.progress.calc_total(all_tracks)
 
         if self.progress.total_size > 0:
-            print(
-                "Total Download Size: " +
-                format_size(self.progress.total_size))
+            print("Total Download Size: " + format_size(self.progress.total_size))
 
         # create track iterator
         for uri in uris:
@@ -260,12 +246,15 @@ class Ripper(threading.Thread):
                     if self.abort.is_set():
                         break
 
-                    print('Loading track...')
+                    print('Loading track %s...' % track.link.uri)
                     track.load()
-                    if track.availability != 1 or track.is_local:
-                        print(
-                            Fore.RED + 'Track is not available, '
-                                       'skipping...' + Fore.RESET)
+                    if track.availability != 1:
+                        print(Fore.RED + 'Track is not available, because spotify, skipping...' + Fore.RESET)
+                        self.post.log_failure(track)
+                        continue
+
+                    if track.is_local:
+                        print(Fore.RED + 'Track is not available, because it is local, skipping...' + Fore.RESET)
                         self.post.log_failure(track)
                         continue
 
@@ -275,9 +264,7 @@ class Ripper(threading.Thread):
                         if is_partial(self.audio_file, track):
                             print("Overwriting partial file")
                         else:
-                            print(
-                                Fore.YELLOW + "Skipping " +
-                                track.link.uri + Fore.RESET)
+                            print(Fore.YELLOW + "Skipping " + track.link.uri + Fore.RESET)
                             print(Fore.CYAN + self.audio_file + Fore.RESET)
                             self.post.queue_remove_from_playlist(idx)
                             continue
@@ -287,8 +274,7 @@ class Ripper(threading.Thread):
                     self.session.player.play()
 
                     timeout_count = 0
-                    while not self.end_of_track.is_set() or \
-                            not self.rip_queue.empty():
+                    while not self.end_of_track.is_set() or not self.rip_queue.empty():
                         try:
                             if self.abort.is_set() or self.skip.is_set():
                                 break
@@ -298,19 +284,15 @@ class Ripper(threading.Thread):
                             if self.abort.is_set() or self.skip.is_set():
                                 break
 
-                            self.rip(self.session, rip_item[0],
-                                     rip_item[1], rip_item[2])
+                            self.rip(self.session, rip_item[0], rip_item[1], rip_item[2])
                         except queue.Empty:
                             timeout_count += 1
                             if timeout_count > 60:
-                                raise spotify.Error("Timeout while "
-                                                    "ripping track")
+                                raise spotify.Error("Timeout while ""ripping track")
 
                     if self.skip.is_set():
-                        extra_line = "" if self.play_token_resume.is_set() \
-                                        else "\n"
-                        print(extra_line + Fore.YELLOW +
-                            "User skipped track... " + Fore.RESET)
+                        extra_line = "" if self.play_token_resume.is_set() else "\n"
+                        print(extra_line + Fore.YELLOW + "User skipped track... " + Fore.RESET)
                         self.session.player.play(False)
                         self.post.clean_up_partial()
                         self.post.log_failure(track)
@@ -374,14 +356,12 @@ class Ripper(threading.Thread):
                 time.sleep(1)
 
         def stop_time_triggered():
-            print(Fore.YELLOW + "Stop time of " +
-                  self.stop_time.strftime("%H:%M") +
-                  " has been triggered, stopping..." + Fore.RESET)
+            print("%s Stop time of %s has been triggered, stopping...%s" % (Fore.YELLOW, self.stop_time.strftime(
+                "%H:%M"), Fore.RESET))
 
             if args.resume_after is not None:
                 resume_time = parse_time_str(args.resume_after)
-                print(Fore.YELLOW + "Script will resume at " +
-                      resume_time.strftime("%H:%M") + Fore.RESET)
+                print(Fore.YELLOW + "Script will resume at " + resume_time.strftime("%H:%M") + Fore.RESET)
                 wait_for_resume(resume_time)
                 self.stop_time = None
             else:
@@ -390,8 +370,7 @@ class Ripper(threading.Thread):
         if args.stop_after is not None:
             if self.stop_time is None:
                 self.stop_time = parse_time_str(args.stop_after)
-                print(Fore.YELLOW + "Script will stop after " +
-                      self.stop_time.strftime("%H:%M") + Fore.RESET)
+                print(Fore.YELLOW + "Script will stop after " + self.stop_time.strftime("%H:%M") + Fore.RESET)
 
             if self.stop_time < datetime.now():
                 stop_time_triggered()
@@ -399,8 +378,7 @@ class Ripper(threading.Thread):
         # we also wait if the "play token" was lost
         elif self.play_token_resume.is_set():
             resume_time = parse_time_str(args.play_token_resume)
-            print(Fore.YELLOW + "Script will resume at " +
-                  resume_time.strftime("%H:%M") + Fore.RESET)
+            print(Fore.YELLOW + "Script will resume at " + resume_time.strftime("%H:%M") + Fore.RESET)
             wait_for_resume(resume_time)
             self.play_token_resume.clear()
 
@@ -415,18 +393,15 @@ class Ripper(threading.Thread):
             return iter([track])
         elif link.type == spotify.LinkType.PLAYLIST:
             self.current_playlist = link.as_playlist()
-            attempt_count = 1
+            count = 1
             while self.current_playlist is None:
-                if attempt_count > 3:
-                    print(Fore.RED + "Could not load playlist..." +
-                          Fore.RESET)
+                if count > 3:
+                    print(Fore.RED + "Could not load playlist..." + Fore.RESET)
                     return iter([])
-                print("Attempt " + str(attempt_count) + " failed: Spotify " +
-                      "returned None for playlist, trying again in 5 " +
-                      "seconds...")
+                print("Attempt %s failed: Spotify returned None for playlist, trying in 5 seconds..." % str(count))
                 time.sleep(5.0)
                 self.current_playlist = link.as_playlist()
-                attempt_count += 1
+                count += 1
 
             print('Loading playlist...')
             self.current_playlist.load()
@@ -439,20 +414,20 @@ class Ripper(threading.Thread):
                     return self.session.get_starred(link_user.canonical_name)
                 else:
                     return self.session.get_starred()
+
             starred = load_starred()
 
-            attempt_count = 1
+            count = 1
             while starred is None:
-                if attempt_count > 3:
-                    print(Fore.RED + "Could not load starred playlist..." +
-                          Fore.RESET)
+                if count > 3:
+                    print(Fore.RED + "Could not load starred playlist..." + Fore.RESET)
                     return iter([])
-                print("Attempt " + str(attempt_count) + " failed: Spotify " +
-                      "returned None for starred playlist, trying again in " +
-                      "5 seconds...")
+                print(
+                    "Attempt " + str(count) + " failed: Spotify returned None for starred playlist, trying in " +
+                    "5 seconds...")
                 time.sleep(5.0)
                 starred = load_starred()
-                attempt_count += 1
+                count += 1
 
             print('Loading starred playlist...')
             starred.load()
@@ -498,7 +473,7 @@ class Ripper(threading.Thread):
         pick = raw_input("Pick track(s) (ex 1-3,5): ")
 
         def get_track(i):
-            if i >= 0 and i < len(result.tracks):
+            if 0 <= i < len(result.tracks):
                 return iter([result.tracks[i]])
             return iter([])
 
@@ -557,15 +532,14 @@ class Ripper(threading.Thread):
                 16: "OTHER_TRANSIENT",
                 10: "OTHER_PERMANENT"
             }
-            print("Logged in failed: " +
-                  error_map.get(error, "UNKNOWN_ERROR_CODE: " + str(error)))
+            print("Logged in failed: " + error_map.get(error, "UNKNOWN_ERROR_CODE: " + str(error)))
             self.login_success = False
             self.logged_in.set()
 
     def play_token_lost(self, session):
         if self.args.play_token_resume is not None:
-            print("\n" + Fore.RED + "Play token lost, waiting " +
-                self.args.play_token_resume + " to resume..." + Fore.RESET)
+            print(
+                '\n%sPlay token lost, waiting %s to resume...%s' % (Fore.RED, self.args.play_token_resume, Fore.RESET))
             self.play_token_resume.set()
             self.skip.set()
         else:
@@ -606,8 +580,7 @@ class Ripper(threading.Thread):
         if track.link.uri in self.track_path_cache:
             return self.track_path_cache[track.link.uri]
 
-        audio_file = \
-            format_track_string(self, args.format[0].strip(), idx, track)
+        audio_file = format_track_string(self, args.format[0].strip(), idx, track)
 
         # in case the file name is too long
         def truncate(_str, max_size):
@@ -669,10 +642,8 @@ class Ripper(threading.Thread):
 
         if self.progress.total_tracks > 1:
             print(Fore.GREEN + "[ " + str(self.progress.track_idx) + " / " +
-                  str(self.progress.total_tracks +
-                      self.progress.skipped_tracks) + " ] Ripping " +
-                  track.link.uri + Fore.WHITE +
-                  "\t(ESC to skip)" + Fore.RESET)
+                  str(self.progress.total_tracks + self.progress.skipped_tracks) + " ] Ripping " +
+                  track.link.uri + Fore.WHITE + "\t(ESC to skip)" + Fore.RESET)
         else:
             print(Fore.GREEN + "Ripping " + track.link.uri + Fore.RESET)
         print(Fore.CYAN + self.audio_file + Fore.RESET)

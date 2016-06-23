@@ -2,14 +2,25 @@
 
 # This file includes all operations to create a working instance of spotify-ripper
 
-# Install encoding
-sudo apt-get install language-pack-UTF-8
+# Update apt-get
+sudo apt-get update
 
 # Add respository
 sudo apt-add-repository multiverse
 
-# Update apt-get
-sudo apt-get update
+ENVS_TO_PUSH_TO_ENV_FILE="LC_ALL=en_GB.UTF-8 LANG=en_GB.UTF-8 PYTHONIOENCODING=utf-8"
+for env in ${ENVS_TO_PUSH_TO_ENV_FILE}; do
+    if grep -Fxq "$env" /etc/environment; then
+        echo "env $env is set"
+    else
+        echo ${env} >> /etc/environment
+    fi
+done
+
+# Install encoding
+#sudo apt-get install language-pack-UTF-8
+locale-gen en_GB.UTF-8
+dpkg-reconfigure locales
 
 #Install required packages
 apt-get -y install lame build-essential libffi-dev python-pip libffi-dev libssl-dev python-dev flac libav-tools faac libfdk-aac-dev automake autoconf vorbis-tools opus-tools
@@ -32,16 +43,24 @@ make install prefix=/usr/local
 pip uninstall spotify-ripper
 pip install --upgrade pip
 export CONFIGURE_OPTS="--enable-unicode=ucs4"
-pyenv install 3.5.1
-pyenv local 3.5.1
-pyenv global 3.5.1
+#pyenv install 3.5.1
+#pyenv local 3.5.1
+#pyenv global 3.5.1
 
 # Install spotify-ripper
 pip install spotify-ripper
 
 # Create directories
 mkdir /home/vagrant/.spotify-ripper
-mkdir /vagrant/Music
+f=/vagrant/Music
+if [ -f "$f" ]
+then
+	echo "$f exists."
+else
+	echo "$f doesn't exists, creating."
+    mkdir ${f}
+fi
+
 
 # Copy config-file
 file="/vagrant/Settings/config.ini"
