@@ -11,6 +11,7 @@ from subprocess import Popen, PIPE
 
 import spotify
 
+from spotify_ripper.color_lines import *
 from spotify_ripper.eventloop import EventLoop
 from spotify_ripper.post_actions import PostActions
 from spotify_ripper.progress import Progress
@@ -97,8 +98,8 @@ class Ripper(threading.Thread):
 
             app_key_path = os.path.join(default_dir, "spotify_appkey.key")
             if not path_exists(app_key_path):
-                print("\n" + Fore.YELLOW + "Please copy your spotify_appkey.key to " + default_dir +
-                      ", or use the --key|-k option" + Fore.RESET)
+                print("\n" + yellow(
+                    "Please copy your spotify_appkey.key to %s, or use the --key|-k option" % default_dir))
                 sys.exit(1)
 
             config.load_application_key_file(app_key_path)
@@ -249,12 +250,12 @@ class Ripper(threading.Thread):
                     print('Loading track %s...' % track.link.uri)
                     track.load()
                     if track.availability != 1:
-                        print(Fore.RED + 'Track is not available, because spotify, skipping...' + Fore.RESET)
+                        print(red('Track is not available, because spotify, skipping...'))
                         self.post.log_failure(track)
                         continue
 
                     if track.is_local:
-                        print(Fore.RED + 'Track is not available, because it is local, skipping...' + Fore.RESET)
+                        print(red('Track is not available, because it is local, skipping...'))
                         self.post.log_failure(track)
                         continue
 
@@ -264,8 +265,8 @@ class Ripper(threading.Thread):
                         if is_partial(self.audio_file, track):
                             print("Overwriting partial file")
                         else:
-                            print(Fore.YELLOW + "Skipping " + track.link.uri + Fore.RESET)
-                            print(Fore.CYAN + self.audio_file + Fore.RESET)
+                            print(yellow("Skipping " + track.link.uri))
+                            print(cyan(self.audio_file))
                             self.post.queue_remove_from_playlist(idx)
                             continue
 
@@ -292,7 +293,7 @@ class Ripper(threading.Thread):
 
                     if self.skip.is_set():
                         extra_line = "" if self.play_token_resume.is_set() else "\n"
-                        print(extra_line + Fore.YELLOW + "User skipped track... " + Fore.RESET)
+                        print(extra_line + yellow("User skipped track... "))
                         self.session.player.play(False)
                         self.post.clean_up_partial()
                         self.post.log_failure(track)
@@ -321,7 +322,7 @@ class Ripper(threading.Thread):
 
                 except (spotify.Error, Exception) as e:
                     if isinstance(e, Exception):
-                        print(Fore.RED + "Spotify error detected" + Fore.RESET)
+                        print(red("Spotify error detected"))
                     print(str(e))
                     print("Skipping to next track...")
                     self.session.player.play(False)
@@ -356,12 +357,11 @@ class Ripper(threading.Thread):
                 time.sleep(1)
 
         def stop_time_triggered():
-            print("%s Stop time of %s has been triggered, stopping...%s" % (Fore.YELLOW, self.stop_time.strftime(
-                "%H:%M"), Fore.RESET))
+            print(yellow("Stop time of %s has been triggered, stopping..." % (self.stop_time.strftime("%H:%M"))))
 
             if args.resume_after is not None:
                 resume_time = parse_time_str(args.resume_after)
-                print(Fore.YELLOW + "Script will resume at " + resume_time.strftime("%H:%M") + Fore.RESET)
+                print(yellow("Script will resume at " + resume_time.strftime("%H:%M")))
                 wait_for_resume(resume_time)
                 self.stop_time = None
             else:
@@ -370,7 +370,7 @@ class Ripper(threading.Thread):
         if args.stop_after is not None:
             if self.stop_time is None:
                 self.stop_time = parse_time_str(args.stop_after)
-                print(Fore.YELLOW + "Script will stop after " + self.stop_time.strftime("%H:%M") + Fore.RESET)
+                print(yellow("Script will stop after " + self.stop_time.strftime("%H:%M")))
 
             if self.stop_time < datetime.now():
                 stop_time_triggered()
@@ -378,7 +378,7 @@ class Ripper(threading.Thread):
         # we also wait if the "play token" was lost
         elif self.play_token_resume.is_set():
             resume_time = parse_time_str(args.play_token_resume)
-            print(Fore.YELLOW + "Script will resume at " + resume_time.strftime("%H:%M") + Fore.RESET)
+            print(yellow("Script will resume at " + resume_time.strftime("%H:%M")))
             wait_for_resume(resume_time)
             self.play_token_resume.clear()
 
@@ -396,9 +396,9 @@ class Ripper(threading.Thread):
             count = 1
             while self.current_playlist is None:
                 if count > 3:
-                    print(Fore.RED + "Could not load playlist..." + Fore.RESET)
+                    print(red("Could not load playlist..."))
                     return iter([])
-                print("Attempt %s failed: Spotify returned None for playlist, trying in 5 seconds..." % str(count))
+                print("Attempt %d failed: Spotify returned None for playlist, trying in 5 seconds..." % count)
                 time.sleep(5.0)
                 self.current_playlist = link.as_playlist()
                 count += 1
@@ -420,11 +420,9 @@ class Ripper(threading.Thread):
             count = 1
             while starred is None:
                 if count > 3:
-                    print(Fore.RED + "Could not load starred playlist..." + Fore.RESET)
+                    print(red("Could not load starred playlist..."))
                     return iter([])
-                print(
-                    "Attempt " + str(count) + " failed: Spotify returned None for starred playlist, trying in " +
-                    "5 seconds...")
+                print('Attempt %d failed: Spotify returned None for starred playlist, trying in 5 seconds...' % count)
                 time.sleep(5.0)
                 starred = load_starred()
                 count += 1
@@ -641,8 +639,8 @@ class Ripper(threading.Thread):
         self.progress.prepare_track(track)
 
         if self.progress.total_tracks > 1:
-            print(Fore.GREEN + "[ " + str(self.progress.track_idx) + " / " +
-                  str(self.progress.total_tracks + self.progress.skipped_tracks) + " ] Ripping " +
+            print(Fore.GREEN + "[ " + str(self.progress.track_idx) + " / " + str(
+                self.progress.total_tracks + self.progress.skipped_tracks) + " ] Ripping " +
                   track.link.uri + Fore.WHITE + "\t(ESC to skip)" + Fore.RESET)
         else:
             print(Fore.GREEN + "Ripping " + track.link.uri + Fore.RESET)

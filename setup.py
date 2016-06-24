@@ -19,8 +19,8 @@ def _read(fn):
     return open(path).read()
 
 setup(
-    name='spotify-ripper',
-    version='2.9.1',
+    name='spotify-ripper-morgaroth',
+    version='2.9.2',
     packages=find_packages(exclude=["tests"]),
     scripts=['spotify_ripper/main.py'],
     include_package_data=True,
@@ -48,14 +48,14 @@ setup(
     ],
 
     # Metadata
-    author='James Newell',
-    author_email='james.newell@gmail.com',
+    author='Mateusz Jaje',
+    author_email='mateuszjaje@gmail.com',
     description='a small ripper for Spotify that rips Spotify URIs '
                 'to audio files',
     license='MIT',
     keywords="spotify ripper mp3 ogg vorbis flac opus acc mp4 m4a",
-    url='https://github.com/jrnewell/spotify-ripper',
-    download_url='https://github.com/jrnewell/spotify-ripper/tarball/2.9.1',
+    url='https://github.com/morgaroth/spotify-ripper',
+    download_url='https://github.com/morgaroth/spotify-ripper-morgaroth/tarball/2.9.2',
     classifiers=[
         'Topic :: Multimedia :: Sound/Audio',
         'Topic :: Multimedia :: Sound/Audio :: Capture/Recording',

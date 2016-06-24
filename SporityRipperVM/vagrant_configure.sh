@@ -23,7 +23,9 @@ locale-gen en_GB.UTF-8
 dpkg-reconfigure locales
 
 #Install required packages
-apt-get -y install lame build-essential libffi-dev python-pip libffi-dev libssl-dev python-dev flac libav-tools faac libfdk-aac-dev automake autoconf vorbis-tools opus-tools
+apt-get -y install \
+        lame build-essential libffi-dev python-pip libffi-dev libssl-dev python-dev flac libav-tools faac \
+        libfdk-aac-dev automake autoconf vorbis-tools opus-tools
 
 # Install MP4/M4A (need to compile fdkaac from source)
 wget https://github.com/nu774/fdkaac/archive/v0.6.2.tar.gz
