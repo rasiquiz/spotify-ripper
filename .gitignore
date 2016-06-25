@@ -61,3 +61,6 @@ spotify_appkey.key
 *.m4a
 tmp/*
 *~
+/SpotifyRipperVM/.vagrant/
+/SpotifyRipperVM/Shared/Music/
+/SpotifyRipperVM/Shared/Settings/config.ini

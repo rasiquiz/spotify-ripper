@@ -154,7 +154,7 @@ def main(prog_args=sys.argv[1:]):
     # set defaults
     parser.set_defaults(**defaults)
 
-    prog_version = pkg_resources.require("spotify-ripper")[0].version
+    prog_version = pkg_resources.require("spotify-ripper-morgaroth")[0].version
     parser.add_argument(
         '-a', '--ascii', action='store_true',
         help='Convert the file name and the metadata tags to ASCII '

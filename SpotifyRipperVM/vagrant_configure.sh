@@ -50,11 +50,11 @@ export CONFIGURE_OPTS="--enable-unicode=ucs4"
 #pyenv global 3.5.1
 
 # Install spotify-ripper
-pip install spotify-ripper
+pip install spotify-ripper-morgaroth
 
 # Create directories
 mkdir /home/vagrant/.spotify-ripper
-f=/vagrant/Music
+f="/vagrant/Music"
 if [ -f "$f" ]
 then
 	echo "$f exists."
