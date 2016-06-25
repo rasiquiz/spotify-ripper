@@ -639,9 +639,12 @@ class Ripper(threading.Thread):
         self.progress.prepare_track(track)
 
         if self.progress.total_tracks > 1:
-            print(Fore.GREEN + "[ " + str(self.progress.track_idx) + " / " + str(
-                self.progress.total_tracks + self.progress.skipped_tracks) + " ] Ripping " +
-                  track.link.uri + Fore.WHITE + "\t(ESC to skip)" + Fore.RESET)
+            skipped_str = ''
+            if self.progress.skipped_tracks > 0:
+                skipped_str = '(%d skipped) ' % self.progress.skipped_tracks
+            print("%s[ %d %s/ %d ] Ripping %s %s\t(ESC to skip)%s" % (
+                Fore.GREEN, self.progress.track_idx, skipped_str, self.progress.total_tracks,
+                track.link.uri, Fore.WHITE, Fore.RESET))
         else:
             print(Fore.GREEN + "Ripping " + track.link.uri + Fore.RESET)
         print(Fore.CYAN + self.audio_file + Fore.RESET)
