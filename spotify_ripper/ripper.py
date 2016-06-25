@@ -642,8 +642,8 @@ class Ripper(threading.Thread):
             skipped_str = ''
             if self.progress.skipped_tracks > 0:
                 skipped_str = '(%d skipped) ' % self.progress.skipped_tracks
-            print("%s[ %d %s/ %d ] Ripping %s %s\t(ESC to skip)%s" % (
-                Fore.GREEN, self.progress.track_idx, skipped_str, self.progress.total_tracks,
+            print("%s[ %d / %d %s] Ripping %s %s\t(ESC to skip)%s" % (
+                Fore.GREEN, self.progress.track_idx, self.progress.total_tracks, skipped_str,
                 track.link.uri, Fore.WHITE, Fore.RESET))
         else:
             print(Fore.GREEN + "Ripping " + track.link.uri + Fore.RESET)

@@ -42,7 +42,7 @@ cd libspotify-12.1.51-Linux-x86_64-release/
 make install prefix=/usr/local
 
 # Workaround for issue #214
-pip uninstall spotify-ripper-morgaroth
+/usr/bin/yes | pip uninstall spotify-ripper-morgaroth
 pip install --upgrade pip
 export CONFIGURE_OPTS="--enable-unicode=ucs4"
 #pyenv install 3.5.1
@@ -72,10 +72,11 @@ fi
 
 # Copy config-file
 file="/vagrant/Settings/config.ini"
-if [ -f "$file" ]
-then
+if [ -f "$file" ]; then
+    link_target=/home/vagrant/.spotify-ripper/config.ini
+	rm -f ${link_target}
 	echo "$file found. Linking file to ~/.spotify-ripper"
-	ln -s "$file" /home/vagrant/.spotify-ripper/config.ini	
+	ln -s "$file" ${link_target}
 else
 	echo "$file not found."
 fi
@@ -84,9 +85,10 @@ fi
 file2="/vagrant/Settings/spotify_appkey.key"
 if [ -f "$file2" ]
 then
+    link_target=/home/vagrant/.spotify-ripper/spotify_appkey.key
+	rm -f ${link_target}
 	echo "$file2 found. Linking file to ~/.spotify-ripper"
 	ln -s "$file2" /home/vagrant/.spotify-ripper/spotify_appkey.key
-	
 else
 	echo "$file2 not found. You need a spotify developer key to transcode pcm stream."
 	echo "Please copy your spotify_appkey.key to your shared host directory /vagrant/Settings/"
