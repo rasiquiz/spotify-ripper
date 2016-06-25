@@ -20,7 +20,7 @@ def _read(fn):
 
 setup(
     name='spotify-ripper-morgaroth',
-    version='2.9.3',
+    version='2.9.4',
     packages=find_packages(exclude=["tests"]),
     scripts=['spotify_ripper/main.py'],
     include_package_data=True,

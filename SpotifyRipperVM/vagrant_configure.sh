@@ -42,7 +42,7 @@ cd libspotify-12.1.51-Linux-x86_64-release/
 make install prefix=/usr/local
 
 # Workaround for issue #214
-pip uninstall spotify-ripper
+pip uninstall spotify-ripper-morgaroth
 pip install --upgrade pip
 export CONFIGURE_OPTS="--enable-unicode=ucs4"
 #pyenv install 3.5.1
@@ -53,10 +53,16 @@ export CONFIGURE_OPTS="--enable-unicode=ucs4"
 pip install spotify-ripper-morgaroth
 
 # Create directories
-mkdir /home/vagrant/.spotify-ripper
-f="/vagrant/Music"
-if [ -f "$f" ]
-then
+f="/home/vagrant/.spotify-ripper"
+if [ -d "$f" ]; then
+	echo "$f exists."
+else
+	echo "$f doesn't exists, creating."
+    mkdir ${f}
+fi
+
+f="/vagrant/Music/"
+if [ -d "$f" ]; then
 	echo "$f exists."
 else
 	echo "$f doesn't exists, creating."
