@@ -369,7 +369,7 @@ To install spotify-ripper once pyenv is setup:
     $ sudo ln -s /usr/local/opt/libspotify/lib/libspotify.12.1.51.dylib \
         /usr/local/opt/libspotify/lib/libspotify
     $ brew install lame
-    $ pip install spotify-ripper
+    $ pip install spotify-ripper-morgaroth
     $ pyenv rehash
 
 **Note that Spotify may no longer be issuing developer keys.** See `Libspotify’s Deprecation`_
